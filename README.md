@@ -2,7 +2,7 @@
 A .wav file audio compressor and decompressor written in C and optimized for an ARM-based embedded system.  Created for UVic SENG 440: Embedded Systems.
 
 # Usage
-`ssh netlinkID@seng440.uvic.ca`
+`ssh netlinkID@seng440.ece.uvic.ca`
 
 `mkdir /tmp/brettliam`
 
