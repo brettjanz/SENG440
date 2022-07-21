@@ -24,7 +24,7 @@ void print_wav_info(FILE* fp) {
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, fp);
 	printf("(5-8)[BE]: %u%u%u%u\n", four_byte_buffer[0], four_byte_buffer[1], four_byte_buffer[2], four_byte_buffer[3]);
 
-	header.total_size = convert_to_big_endian(four_byte_buffer);
+	header.total_size = convert_32_to_big_endian(four_byte_buffer);
 	printf("(5-8)[BE]: %u\n", header.total_size);
 }
 
