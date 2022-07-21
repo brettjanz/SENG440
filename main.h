@@ -5,7 +5,7 @@ typedef struct WAV_HEADER {
 	uint32_t total_size;			// Total size of the wav file
 	unsigned char type[4];			// File type = "WAVE"
 	unsigned char fmt_marker[4];	// Marks the start of the format = "fmt\0"
-	uint32_t int fmt_length;		// Length of format data
+	uint32_t fmt_length;			// Length of format data
 	uint16_t fmt_type;				// Format type = 1 (PCM)
 	uint16_t num_channels;			// Number of channels, 1 = Mono, 2 = Stereo
 	uint32_t sample_rate;			// Sample rate in Hz (44100 commonly)
