@@ -3,12 +3,12 @@
 #include "main.h"
 
 // Converts an array of two-bytes in 
-uint16_t convert_to_big_endian(unsigned char* little_endian) {
+uint16_t convert_16_to_big_endian(unsigned char* little_endian) {
 	uint16_t big_endian = little_endian[0] | (little_endian[1] << 8);
 	return big_endian;
 }
 
-uint32_t convert_to_big_endian(unsigned char* little_endian) {
+uint32_t convert_32_to_big_endian(unsigned char* little_endian) {
 	uint32_t big_endian = little_endian[0] | (little_endian[1] << 8) | (little_endian[2] << 16) | (little_endian[3] << 24);
 	return big_endian;
 }

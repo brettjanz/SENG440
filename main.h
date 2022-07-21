@@ -16,7 +16,7 @@ typedef struct WAV_HEADER {
 	uint32_t data_length;			// Length of the data
 } Header;
 
-uint16_t convert_to_big_endian(unsigned char* little_endian);
-uint32_t convert_to_big_endian(unsigned char* little_endian);
+uint16_t convert_16_to_big_endian(unsigned char* little_endian);
+uint32_t convert_32_to_big_endian(unsigned char* little_endian);
 
 void print_wav_info(FILE* fp);
