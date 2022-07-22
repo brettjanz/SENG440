@@ -2,8 +2,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#if defined __has_include
+#  if __has_include (<direct.h>)
+#    include <direct.h>
+#  else
+#	 include <unistd.h>
+#  endif
+#endif
 #include <direct.h>
 #include "main.h"
+
 
 /*
 	Only supports signed 16-bit PCM .WAV files
