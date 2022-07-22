@@ -18,7 +18,7 @@ typedef struct HEADER {
 
 typedef struct WAVE {
 	Header header;
-	uint16_t* samples;
+	int16_t* samples;
 }Wave;
 
 uint16_t convert_16_to_big_endian(unsigned char* little_endian);
