@@ -8,6 +8,7 @@
 #  endif
 #else
 #  include <unistd.h>
+#  define _getcwd getcwd
 #endif
 #include "main.h"
 
