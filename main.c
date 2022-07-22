@@ -41,6 +41,7 @@ uint32_t convert_32_to_big_endian(unsigned char* little_endian) {
 void read_wav() {
 
 	fread(wave.header.riff, sizeof(wave.header.riff), 1, fp);
+	printf("(1-4):\t\t %.4s\n", wave.header.riff);
 
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, fp);
 	wave.header.total_size = convert_32_to_big_endian(four_byte_buffer);
@@ -74,6 +75,7 @@ void read_wav() {
 
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, fp);
 	wave.header.data_length = convert_32_to_big_endian(four_byte_buffer);
+	printf("(40-44):\t Data Length: %u bytes, %ukb\n", wave.header.data_length, wave.header.data_length / 1024);
 
 	num_samples = wave.header.data_length / (wave.header.bits_per_sample * wave.header.num_channels);
 
@@ -146,9 +148,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Read file contents
+	printf("Reading file\n");
 	read_wav();
 	
 	// Print wave.header info
+	printf("Printing header\n");
 	print_header();
 
 	// Print wave.samples data
