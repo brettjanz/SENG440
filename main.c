@@ -435,7 +435,7 @@ int main(int argc, char* argv[]) {
 	// Build output filepath
 	char output_filepath[1024];
 	strcpy(output_filepath, cwd);
-	strcat(output_filepath, "\\decompressed.wav");
+	strcat(output_filepath, "/decompressed.wav");
 	printf("\nSaving to file: %s\n\n", output_filepath);
 	
 	// Create file
