@@ -21,9 +21,25 @@ typedef struct WAVE {
 	int16_t* samples;
 }Wave;
 
-uint16_t convert_16_to_big_endian(unsigned char* little_endian);
-uint32_t convert_32_to_big_endian(unsigned char* little_endian);
+typedef struct COMPRESSED_WAVE {
+	Header header;
+	uint8_t* samples;
+}CompressedWave;
 
+uint16_t convert_16_to_big_endian(unsigned char* little_endian);
+unsigned char* convert_16_to_little_endian(uint16_t big_endian);
+uint32_t convert_32_to_big_endian(unsigned char* little_endian);
+unsigned char* convert_32_to_little_endian(uint32_t big_endian);
+
+void test();
 void read_wav();
+void write_wav();
 void print_header();
 void print_samples();
+void compress_data();
+void decompress_data();
+uint8_t signum(int16_t sample);
+uint8_t compressed_signum(uint8_t codeword);
+uint16_t magnitude(int16_t sample);
+uint16_t compressed_magnitude(uint8_t codeword);
+uint8_t get_codeword(uint8_t sign, uint16_t mag);
