@@ -384,8 +384,8 @@ void test() {
 
 int main(int argc, char* argv[]) {
 	// Check args length
-	if (argc < 2) {
-		printf("First argument must be a .wav file in the current directory\n");
+	if (argc < 3) {
+		printf("Please provide both an input and output filepath\n");
 		exit(1);
 	}
 
@@ -435,7 +435,8 @@ int main(int argc, char* argv[]) {
 	// Build output filepath
 	char output_filepath[1024];
 	strcpy(output_filepath, cwd);
-	strcat(output_filepath, "/decompressed.wav");
+	strcat(output_filepath, "/");
+	strcat(output_filepath, argv[2]);
 	printf("\nSaving to file: %s\n\n", output_filepath);
 	
 	// Create file
