@@ -5,5 +5,4 @@ main:
 
 clean:
 	rm main.exe
-	rm decompressed.wav
 	(sleep 1; echo user1; sleep 1; echo q6coHjd7P; sleep 1; echo rm -rf brettliam; sleep 1;) | telnet arm
