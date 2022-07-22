@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+#include <direct.h>
 #include "main.h"
 
 // Converts an array of two-bytes in 
@@ -32,18 +35,28 @@ int main(int argc, char* argv[]) {
 	// Read the wav file
 	if (argc < 2) {
 		printf("First argument must be a .wav file in the current directory\n");
-		return 0;
+		exit(1);
 	}
 
-	char* filename = argv[1];
-	FILE* fp = fopen(filename, "rb");
+	// Build filepath
+	char filepath[1024];
+	if (_getcwd(filepath, sizeof(filepath)) == NULL) {
+		printf("Error getting working directory\n");
+		exit(1);
+	}
+
+	strcat(filepath, "/");
+	strcat(filepath, argv[1]);
+	printf("Filepath: %s\n", filepath);
+
+	FILE* fp = fopen(filepath, "rb");
 	if (fp == NULL) {
 		printf("Error opening file\n");
-		return 0;
+		exit(1);
 	}
 
 	print_wav_info(fp);
-	return 0;
+	exit(0);
 	// Compress its contents
 
 	// Decompress its contents
