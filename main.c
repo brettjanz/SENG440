@@ -5,11 +5,10 @@
 #if defined __has_include
 #  if __has_include (<direct.h>)
 #    include <direct.h>
-#  else
-#	 include <unistd.h>
 #  endif
+#else
+#  include <unistd.h>
 #endif
-#include <direct.h>
 #include "main.h"
 
 
