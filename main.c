@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 		printf("Error getting working directory\n");
 		exit(1);
 	}
-	strcat(filepath, "\\");
+	strcat(filepath, "/");
 	strcat(filepath, argv[1]);
 	printf("Filepath: %s\n", filepath);
 
