@@ -86,7 +86,8 @@ void read_wav() {
 	}
 
 	// Read the sample data from the .wav file into the Wave struct
-	for (int i = 0; i < num_samples; i++) {
+	int i;
+	for (i = 0; i < num_samples; i++) {
 		fread(two_byte_buffer, sizeof(two_byte_buffer), 1, fp);
 		wave.samples[i] = convert_16_to_big_endian(two_byte_buffer);
 	}
@@ -113,7 +114,8 @@ void print_header() {
 
 // Prints the samples in big-endian format
 void print_samples() {
-	for (int i = 0; i < num_samples; i++) {
+	int i;
+	for (i = 0; i < num_samples; i++) {
 		printf("[%i]: %x\n", i, wave.samples[i]);
 	}
 }
