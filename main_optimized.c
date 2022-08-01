@@ -18,16 +18,8 @@
 	Only supports signed 16-bit PCM .WAV files
 */
 
-Wave wave;
-CompressedWave compressed_wave;
-
-FILE* input_file;
-FILE* output_file;
-uint32_t num_samples;
-uint16_t bytes_per_sample;
 unsigned char two_byte_buffer[2];
 unsigned char four_byte_buffer[4];
-time_t start, end;
 
 // Converts an array of two bytes in little-endian form to big-endian form
 uint16_t convert_16_to_big_endian(unsigned char* little_endian) {
@@ -58,51 +50,53 @@ unsigned char* convert_32_to_little_endian(uint32_t big_endian) {
 }
 
 // Reads a .wav file into the global Wave struct
-void read_wav() {
+uint32_t read_wav(Wave* wave_ptr, FILE* input_file) {
+
+	uint32_t num_samples;
 
 	// Read header
-	fread(wave.header.riff, sizeof(wave.header.riff), 1, input_file);
+	fread(wave_ptr->header.riff, sizeof(wave_ptr->header.riff), 1, input_file);
 
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave.header.total_size = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.total_size = convert_32_to_big_endian(four_byte_buffer);
 
-	fread(wave.header.type, sizeof(wave.header.type), 1, input_file);
+	fread(wave_ptr->header.type, sizeof(wave_ptr->header.type), 1, input_file);
 
-	fread(wave.header.fmt_marker, sizeof(wave.header.fmt_marker), 1, input_file);
+	fread(wave_ptr->header.fmt_marker, sizeof(wave_ptr->header.fmt_marker), 1, input_file);
 
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave.header.fmt_length = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.fmt_length = convert_32_to_big_endian(four_byte_buffer);
 
 	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave.header.fmt_type = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.fmt_type = convert_16_to_big_endian(two_byte_buffer);
 
 	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave.header.num_channels = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.num_channels = convert_16_to_big_endian(two_byte_buffer);
 
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave.header.sample_rate = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.sample_rate = convert_32_to_big_endian(four_byte_buffer);
 
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave.header.byte_rate = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.byte_rate = convert_32_to_big_endian(four_byte_buffer);
 
 	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave.header.block_align = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.block_align = convert_16_to_big_endian(two_byte_buffer);
 
 	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave.header.bits_per_sample = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.bits_per_sample = convert_16_to_big_endian(two_byte_buffer);
 
-	fread(wave.header.data_marker, sizeof(wave.header.data_marker), 1, input_file);
+	fread(wave_ptr->header.data_marker, sizeof(wave_ptr->header.data_marker), 1, input_file);
 
 	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave.header.data_length = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.data_length = convert_32_to_big_endian(four_byte_buffer);
 
 	// Calculate some useful numbers
-	bytes_per_sample = (wave.header.bits_per_sample * wave.header.num_channels) / 8;
-	num_samples = wave.header.data_length / (bytes_per_sample * wave.header.num_channels);
+	uint16_t bytes_per_sample = (wave_ptr->header.bits_per_sample * wave_ptr->header.num_channels) / 8;
+	num_samples = wave_ptr->header.data_length / (bytes_per_sample * wave_ptr->header.num_channels);
 
 	// Allocate memory for the sample data
-	wave.samples = calloc(num_samples, bytes_per_sample);
-	if (wave.samples == NULL) {
+	wave_ptr->samples = calloc(num_samples, bytes_per_sample);
+	if (wave_ptr->samples == NULL) {
 		printf("Could not allocate memory for samples.\n");
 		exit(1);
 	}
@@ -111,60 +105,63 @@ void read_wav() {
 	int i;
 	for (i = 0; i < num_samples; i++) {
 		fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-		wave.samples[i] = (int16_t)convert_16_to_big_endian(two_byte_buffer);
+		wave_ptr->samples[i] = (int16_t)convert_16_to_big_endian(two_byte_buffer);
 	}
+
+	printf("Read file\n");
+	return num_samples;
 }
 
-void write_wav() {
+void write_wav(Wave* wave_ptr, uint32_t num_samples, FILE* output_file) {
 	
 	// Write to header
-	fwrite(wave.header.riff, sizeof(wave.header.riff), 1, output_file);
+	fwrite(wave_ptr->header.riff, sizeof(wave_ptr->header.riff), 1, output_file);
 
-	convert_32_to_little_endian(wave.header.total_size);
+	convert_32_to_little_endian(wave_ptr->header.total_size);
 	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
 
-	fwrite(wave.header.type, sizeof(wave.header.type), 1, output_file);
+	fwrite(wave_ptr->header.type, sizeof(wave_ptr->header.type), 1, output_file);
 
-	fwrite(wave.header.fmt_marker, sizeof(wave.header.fmt_marker), 1, output_file);
+	fwrite(wave_ptr->header.fmt_marker, sizeof(wave_ptr->header.fmt_marker), 1, output_file);
 
-	convert_32_to_little_endian(wave.header.fmt_length);
+	convert_32_to_little_endian(wave_ptr->header.fmt_length);
 	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
 
-	convert_16_to_little_endian(wave.header.fmt_type);
+	convert_16_to_little_endian(wave_ptr->header.fmt_type);
 	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
 
-	convert_16_to_little_endian(wave.header.num_channels);
+	convert_16_to_little_endian(wave_ptr->header.num_channels);
 	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
 
-	convert_32_to_little_endian(wave.header.sample_rate);
+	convert_32_to_little_endian(wave_ptr->header.sample_rate);
 	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
 
-	convert_32_to_little_endian(wave.header.byte_rate);
+	convert_32_to_little_endian(wave_ptr->header.byte_rate);
 	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
 
-	convert_16_to_little_endian(wave.header.block_align);
+	convert_16_to_little_endian(wave_ptr->header.block_align);
 	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
 
-	convert_16_to_little_endian(wave.header.bits_per_sample);
+	convert_16_to_little_endian(wave_ptr->header.bits_per_sample);
 	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
 
-	fwrite(wave.header.data_marker, sizeof(wave.header.data_marker), 1, output_file);
+	fwrite(wave_ptr->header.data_marker, sizeof(wave_ptr->header.data_marker), 1, output_file);
 
-	convert_32_to_little_endian(wave.header.data_length);
+	convert_32_to_little_endian(wave_ptr->header.data_length);
 	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
 
 	// Write data
 	int i;
 	for (i = 0; i < num_samples; i++) {
-		convert_16_to_little_endian((uint16_t)wave.samples[i]);
+		convert_16_to_little_endian((uint16_t)wave_ptr->samples[i]);
 		fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
 	}
 }
 
-void compress_data() {
+uint8_t* compress_data(Wave* wave_ptr, uint32_t num_samples) {
 
-	compressed_wave.samples = calloc(num_samples, sizeof(uint8_t));
-	if (compressed_wave.samples == NULL) {
+	uint8_t* compressed_samples = calloc(num_samples, sizeof(uint8_t));
+	if (compressed_samples == NULL) {
 		printf("Could not allocate memory for compressed samples.\n");
 		exit(1);
 	}
@@ -176,8 +173,8 @@ void compress_data() {
 
 	int i;
 	for (i = 0; i < num_samples; i++) {
-		// printf("Full Sample: %i\n", wave.samples[i]);
-		sample = (wave.samples[i] >> 2); // Only 14 bits are needed for mu-Law
+		// printf("Full Sample: %i\n", wave_ptr->samples[i]);
+		sample = (wave_ptr->samples[i] >> 2); // Only 14 bits are needed for mu-Law
 		// printf("Sample[14]: %i\n", sample);
 
 		// Convert the sample into sign-magnitude representation
@@ -191,8 +188,10 @@ void compress_data() {
 		// Perform bit-wise inversion of the codeword
 		codeword = ~codeword;
 
-		compressed_wave.samples[i] = codeword;
+		compressed_samples[i] = codeword;
 	}
+
+	return compressed_samples;
 }
 
 // Returns the proper codeword from the mu-law encoding table
@@ -304,7 +303,7 @@ uint16_t compressed_magnitude(uint8_t codeword) {
 }
 
 // Performs the compression steps in reverse according to the mu-law decoding table to get back a full 16 bit sample
-void decompress_data() {
+void decompress_data(Wave* wave_ptr, uint32_t num_samples, uint8_t* compressed_samples) {
 	int16_t sample;
 	uint16_t mag;
 	uint8_t sign;
@@ -312,7 +311,7 @@ void decompress_data() {
 
 	int i;
 	for (i = 0; i < num_samples; i++) {
-		codeword = compressed_wave.samples[i];
+		codeword = compressed_samples[i];
 		codeword = ~codeword;
 		// printf("Decompressed Codeword: %i\n", codeword);
 		sign = compressed_signum(codeword);
@@ -322,67 +321,49 @@ void decompress_data() {
 		mag -= 33;
 		sample = (int16_t)(sign ? -mag : mag);
 		// printf("Decompressed Sample [14]: %i\n", sample);
-		wave.samples[i] = (sample << 2);
-		// printf("Full Decompressed Sample: %i\n\n\n", wave.samples[i]);
+		wave_ptr->samples[i] = (sample << 2);
+		// printf("Full Decompressed Sample: %i\n\n\n", wave_ptr->samples[i]);
 	}
 }
 
 // Prints the header values of a .wav file
-void print_header() {
+void print_header(Wave* wave_ptr, uint32_t num_samples) {
 	printf("================== HEADER ====================\n");
-	printf("(1-4):\t\t %.4s\n", wave.header.riff);
-	printf("(5-8):\t\t Total Size: %u bytes, %ukb\n", wave.header.total_size, wave.header.total_size / 1024);
-	printf("(9-12):\t\t %.4s\n", wave.header.type);
-	printf("(13-16):\t %.3s\n", wave.header.fmt_marker);
-	printf("(17-20):\t Format Length: %u bytes\n", wave.header.fmt_length);
-	printf("(21-22):\t Format Type: %u\n", wave.header.fmt_type);
-	printf("(23-24):\t Channels: %u\n", wave.header.num_channels);
-	printf("(25-28):\t Sample Rate: %u Hz\n", wave.header.sample_rate);
-	printf("(29-32):\t Byte Rate: %u bytes/s\n", wave.header.byte_rate);
-	printf("(33-34):\t Block Align: %u\n", wave.header.block_align);
-	printf("(35-36):\t Bits Per Sample: %u\n", wave.header.bits_per_sample);
-	printf("(37-40):\t %.4s\n", wave.header.data_marker);
-	printf("(40-44):\t Data Length: %u bytes, %ukb\n", wave.header.data_length, wave.header.data_length / 1024);
+	printf("(1-4):\t\t %.4s\n", wave_ptr->header.riff);
+	printf("(5-8):\t\t Total Size: %u bytes, %ukb\n", wave_ptr->header.total_size, wave_ptr->header.total_size / 1024);
+	printf("(9-12):\t\t %.4s\n", wave_ptr->header.type);
+	printf("(13-16):\t %.3s\n", wave_ptr->header.fmt_marker);
+	printf("(17-20):\t Format Length: %u bytes\n", wave_ptr->header.fmt_length);
+	printf("(21-22):\t Format Type: %u\n", wave_ptr->header.fmt_type);
+	printf("(23-24):\t Channels: %u\n", wave_ptr->header.num_channels);
+	printf("(25-28):\t Sample Rate: %u Hz\n", wave_ptr->header.sample_rate);
+	printf("(29-32):\t Byte Rate: %u bytes/s\n", wave_ptr->header.byte_rate);
+	printf("(33-34):\t Block Align: %u\n", wave_ptr->header.block_align);
+	printf("(35-36):\t Bits Per Sample: %u\n", wave_ptr->header.bits_per_sample);
+	printf("(37-40):\t %.4s\n", wave_ptr->header.data_marker);
+	printf("(40-44):\t Data Length: %u bytes, %ukb\n", wave_ptr->header.data_length, wave_ptr->header.data_length / 1024);
 	printf("==============================================\n\n");
 	printf("Number of Samples: %u\n", num_samples);
-	printf("Bytes per Sample: %u\n\n", bytes_per_sample);
+	printf("Bytes per Sample: %u\n\n", (wave_ptr->header.bits_per_sample * wave_ptr->header.num_channels) / 8);
 }
 
 // Prints the samples in big-endian format
-void print_samples() {
+void print_samples(Wave* wave_ptr, uint32_t num_samples) {
 	int i;
 	for (i = 0; i < num_samples; i++) {
-		printf("[%i]: %x\n", i, wave.samples[i]);
+		printf("[%i]: %x\n", i, wave_ptr->samples[i]);
 	}
 }
 
-void test() {
-	uint16_t input = 10102 << 2;
-	printf("Input: %x\n", input);
-	int16_t sample = (int16_t)input; // Only 14 bits are needed for mu-Law
-	sample = sample >> 2;
-	printf("Sample: %i\n", sample);
-
-	// Convert the sample into sign-magnitude representation
-	uint8_t sign = signum(sample);
-	uint16_t mag = magnitude(sample) + 33; // Bias of 33 added so that each threshold is a power of 2
-
-	// Find the codeword according to the mu-law encoding table
-	uint8_t codeword = get_codeword(sign, mag);
-
-	// Perform bit-wise inversion of the codeword
-	// codeword = ~codeword;
-	printf("Codeword: %x\n", codeword);
-
-	sign = compressed_signum(codeword);
-	printf("Sign: %x\n", sign);
-	mag = compressed_magnitude(codeword) - 33;
-	printf("Mag: %x\n", mag);
-	sample = (sign << 13) | mag;
-	printf("Sample: %i\n", (int16_t)sample);
-}
-
 int main(int argc, char* argv[]) {
+
+	FILE *input_file; 
+	FILE* output_file;
+	Wave* wave_ptr, wave;
+	wave_ptr = &wave;
+	printf("%u\n", sizeof(wave_ptr->header));
+	time_t start, end;
+
 	// Check args length
 	if (argc < 3) {
 		printf("Please provide both an input and output filepath\n");
@@ -397,7 +378,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	strcpy(input_filepath, cwd);
-	strcat(input_filepath, "/");
+	strcat(input_filepath, "\\");
 	strcat(input_filepath, argv[1]);
 	printf("\nUsing file: %s\n\n", input_filepath);
 
@@ -409,26 +390,26 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Read file contents
-	read_wav();
+	uint32_t num_samples = read_wav(wave_ptr, input_file);
 
 	// Close input file
 	fclose(input_file);
 	
-	// Print wave.header info
-	print_header();
+	// Print wave_ptr->header info
+	print_header(wave_ptr, num_samples);
 
-	// Print wave.samples data
-	// print_samples();
+	// Print wave_ptr->samples data
+	// print_samples(wave_ptr, num_samples);
 
 	// Compress its contents
 	start = clock();
-	compress_data();
+	uint8_t* compressed_samples = compress_data(wave_ptr, num_samples);
 	end = clock();
 	printf("Compressed %u samples in %us\n", num_samples, (uint32_t)((end - start) / CLOCKS_PER_SEC));
 
 	// Decompress its contents
 	start = clock();
-	decompress_data();
+	decompress_data(wave_ptr, num_samples, compressed_samples);
 	end = clock();
 	printf("Decompressed %u samples in %us\n\n", num_samples, (uint32_t)((end - start) / CLOCKS_PER_SEC));
 	
@@ -447,12 +428,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Write to file
-	write_wav();
+	write_wav(wave_ptr, num_samples, output_file);
 
 	// Close and exit
 	fclose(output_file);
-	free(wave.samples);
-	free(compressed_wave.samples);
+	free(wave_ptr->samples);
+	free(compressed_samples);
 	
 	//test();
 	exit(0);
