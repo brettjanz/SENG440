@@ -31,12 +31,12 @@ unsigned char* convert_16_to_little_endian(uint16_t big_endian);
 uint32_t convert_32_to_big_endian(unsigned char* little_endian);
 unsigned char* convert_32_to_little_endian(uint32_t big_endian);
 
-uint32_t read_wav(Wave* wave, FILE* input_file);
-void write_wav(Wave* wave, uint32_t num_samples, FILE* output_file);
-void print_header(Wave* wave, uint32_t num_samples);
-void print_samples(Wave* wave, uint32_t num_samples);
-uint8_t* compress_data(Wave* wave, uint32_t num_samples);
-void decompress_data(Wave* wave, uint32_t num_samples, uint8_t* compressed_samples);
+uint32_t read_wav(Wave* wave_ptr, FILE* input_file);
+void write_wav(Wave* wave_ptr, uint32_t num_samples, FILE* output_file);
+void print_header(Wave* wave_ptr, uint32_t num_samples);
+void print_samples(Wave* wave_ptr, uint32_t num_samples);
+uint8_t* compress_data(Wave* wave_ptr, uint32_t num_samples);
+void decompress_data(Wave* wave_ptr, uint32_t num_samples, uint8_t* compressed_samples);
 uint8_t signum(int16_t sample);
 uint8_t compressed_signum(uint8_t codeword);
 uint16_t magnitude(int16_t sample);
