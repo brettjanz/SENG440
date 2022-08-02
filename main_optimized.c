@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 	strcpy(input_filepath, cwd);
-	strcat(input_filepath, "\\");
+	strcat(input_filepath, "/");
 	strcat(input_filepath, argv[1]);
 	printf("\nUsing file: %s\n\n", input_filepath);
 
