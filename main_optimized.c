@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 #include "main_optimized.h"
 
@@ -766,42 +765,12 @@ void decompress_data(Wave* wave_ptr, uint32_t num_samples, uint8_t* compressed_s
 	}
 }
 
-// Prints the header values of a .wav file
-void print_header(Wave* wave_ptr, uint32_t num_samples) {
-	printf("================== HEADER ====================\n");
-	printf("(1-4):\t\t %.4s\n", wave_ptr->header.riff);
-	printf("(5-8):\t\t Total Size: %u bytes, %ukb\n", wave_ptr->header.total_size, wave_ptr->header.total_size / 1024);
-	printf("(9-12):\t\t %.4s\n", wave_ptr->header.type);
-	printf("(13-16):\t %.3s\n", wave_ptr->header.fmt_marker);
-	printf("(17-20):\t Format Length: %u bytes\n", wave_ptr->header.fmt_length);
-	printf("(21-22):\t Format Type: %u\n", wave_ptr->header.fmt_type);
-	printf("(23-24):\t Channels: %u\n", wave_ptr->header.num_channels);
-	printf("(25-28):\t Sample Rate: %u Hz\n", wave_ptr->header.sample_rate);
-	printf("(29-32):\t Byte Rate: %u bytes/s\n", wave_ptr->header.byte_rate);
-	printf("(33-34):\t Block Align: %u\n", wave_ptr->header.block_align);
-	printf("(35-36):\t Bits Per Sample: %u\n", wave_ptr->header.bits_per_sample);
-	printf("(37-40):\t %.4s\n", wave_ptr->header.data_marker);
-	printf("(40-44):\t Data Length: %u bytes, %ukb\n", wave_ptr->header.data_length, wave_ptr->header.data_length / 1024);
-	printf("==============================================\n\n");
-	printf("Number of Samples: %u\n", num_samples);
-	printf("Bytes per Sample: %u\n\n", (wave_ptr->header.bits_per_sample * wave_ptr->header.num_channels) / 8);
-}
-
-// Prints the samples in big-endian format
-void print_samples(Wave* wave_ptr, uint32_t num_samples) {
-	int i;
-	for (i = 0; i < num_samples; i++) {
-		printf("[%i]: %x\n", i, wave_ptr->samples[i]);
-	}
-}
-
 int main(int argc, char* argv[]) {
 
 	FILE *input_file; 
 	FILE* output_file;
 	Wave* wave_ptr, wave;
 	wave_ptr = &wave;
-	time_t start, end;
 
 	// Check args length
 	if (argc < 3) {
@@ -819,12 +788,11 @@ int main(int argc, char* argv[]) {
 	strcpy(input_filepath, cwd);
 	strcat(input_filepath, "/");
 	strcat(input_filepath, argv[1]);
-	printf("\nUsing file: %s\n\n", input_filepath);
 
 	// Open file
 	input_file = fopen(input_filepath, "rb");
 	if (input_file == NULL) {
-		printf("Error opening file\n");
+		printf("Error opening file %s\n", input_filepath);
 		exit(1);
 	}
 
@@ -833,36 +801,23 @@ int main(int argc, char* argv[]) {
 
 	// Close input file
 	fclose(input_file);
-	
-	// Print wave_ptr->header info
-	print_header(wave_ptr, num_samples);
-
-	// Print wave_ptr->samples data
-	// print_samples(wave_ptr, num_samples);
 
 	// Compress its contents
-	start = clock();
 	uint8_t* compressed_samples = compress_data(wave_ptr, num_samples);
-	end = clock();
-	printf("Compressed %u samples in %us\n", num_samples, (uint32_t)((end - start) / CLOCKS_PER_SEC));
 
 	// Decompress its contents
-	start = clock();
 	decompress_data(wave_ptr, num_samples, compressed_samples);
-	end = clock();
-	printf("Decompressed %u samples in %us\n\n", num_samples, (uint32_t)((end - start) / CLOCKS_PER_SEC));
 	
 	// Build output filepath
 	char output_filepath[1024];
 	strcpy(output_filepath, cwd);
 	strcat(output_filepath, "/");
 	strcat(output_filepath, argv[2]);
-	printf("\nSaving to file: %s\n\n", output_filepath);
 	
 	// Create file
 	output_file = fopen(output_filepath, "wb");
 	if (output_file == NULL) {
-		printf("Error creating output file\n");
+		printf("Error creating output file %s\n", output_filepath);
 		exit(1);
 	}
 
