@@ -385,88 +385,79 @@ uint8_t* compress_data(Wave* wave_ptr, uint32_t num_samples) {
 uint8_t get_codeword(uint8_t sign, uint16_t mag) {
 	uint8_t chord, step;
 
-	// Find the chord by calculating the location of the most signifigant 1
-	if (mag & (1 << 12)) {
-		chord = 0x7;
-
-		// Extract the 4 step bits through masking
-		step = (mag >> 8) & 0xF;
-	}
-	else if (mag & (1 << 11)) {
-		chord = 0x6;
-		step = (mag >> 7) & 0xF;
-	}
-	else if (mag & (1 << 10)) {
-		chord = 0x5;
-		step = (mag >> 6) & 0xF;
-	}
-	else if (mag & (1 << 9)) {
-		chord = 0x4;
-		step = (mag >> 5) & 0xF;
-	}
-	else if (mag & (1 << 8)) {
-		chord = 0x3;
-		step = (mag >> 4) & 0xF;
-	}
-	else if (mag & (1 << 7)) {
-		chord = 0x2;
-		step = (mag >> 3) & 0xF;
-	}
-	else if (mag & (1 << 6)) {
-		chord = 0x1;
-		step = (mag >> 2) & 0xF;
-	}
-	else if (mag & (1 << 5)) {
-		chord = 0x0;
-		step = (mag >> 1) & 0xF;
-	}
-	else {
-		printf("Problem generating codeword\n");
-		exit(1);
+	// Calculate log2 of mag
+	uint16_t temp_mag = mag;
+	uint8_t msb = 0;
+	while (temp_mag >>= 1){
+		 msb++;
 	}
 
-	// printf("New Sign: %i\n", sign);
-	// printf("Magnitude: %i\n", mag);
-	// printf("Chord: %i\n", chord);
-	// printf("Step: %i\n", step);
-	// Assemble the sign, chord, and step bits into a compressed codeword
+	switch (msb) {
+		case 5:
+			chord = 0x0;
+			step = (mag >> 1) & 0xF;
+			break;
+		case 6:
+			chord = 0x1;
+			step = (mag >> 2) & 0xF;
+			break;
+		case 7:
+			chord = 0x2;
+			step = (mag >> 3) & 0xF;
+			break;
+		case 8:
+			chord = 0x3;
+			step = (mag >> 4) & 0xF;
+			break;
+		case 9:
+			chord = 0x4;
+			step = (mag >> 5) & 0xF;
+			break;
+		case 10:
+			chord = 0x5;
+			step = (mag >> 6) & 0xF;
+			break;
+		case 11:
+			chord = 0x6;
+			step = (mag >> 7) & 0xF;
+			break;
+		case 12:
+			chord = 0x7;
+			step = (mag >> 8) & 0xF;
+			break;
+		default:
+			printf("Problem generating codeword\n");
+			exit(1);
+	}
+
 	return (sign << 7) | (chord << 4) | step;
 }
 
 uint16_t compressed_magnitude(uint8_t codeword) {
 	uint8_t chord = (codeword >> 4) & 0x7;
-	// printf("Chord: %i\n", chord);
 	uint8_t step = codeword & 0xF;
-	// printf("Step: %i\n", step);
 	uint16_t res;
 
-	if (chord == 0x7) {
-		return (1 << 12) | (step << 8) | (1 << 7);
-	}
-	else if (chord == 0x6) {
-		return (1 << 11) | (step << 7) | (1 << 6);
-	}
-	else if (chord == 0x5) {
-		return (1 << 10) | (step << 6) | (1 << 5);
-	}
-	else if (chord == 0x4) {
-		return (1 << 9) | (step << 5) | (1 << 4);
-	}
-	else if (chord == 0x3) {
-		return (1 << 8) | (step << 4) | (1 << 3);
-	}
-	else if (chord == 0x2) {
-		return (1 << 7) | (step << 3) | (1 << 2);
-	}
-	else if (chord == 0x1) {
-		return (1 << 6) | (step << 2) | (1 << 1);
-	}
-	else if (chord == 0x0) {
-		return (1 << 5) | (step << 1) | 1;
-	}
-	else {
-		printf("Problem retrieving magnitude from codeword\n");
-		exit(1);
+	switch (chord) {
+		case 0x0:
+			return (1 << 5) | (step << 1) | 1;
+		case 0x1:
+			return (1 << 6) | (step << 2) | (1 << 1);
+		case 0x2:
+			return (1 << 7) | (step << 3) | (1 << 2);
+		case 0x3:
+			return (1 << 8) | (step << 4) | (1 << 3);
+		case 0x4:
+			return (1 << 9) | (step << 5) | (1 << 4);
+		case 0x5:
+			return (1 << 10) | (step << 6) | (1 << 5);
+		case 0x6:
+			return (1 << 11) | (step << 7) | (1 << 6);
+		case 0x7:
+			return (1 << 12) | (step << 8) | (1 << 7);
+		default:
+			printf("Problem retrieving magnitude from codeword\n");
+			exit(1);
 	}
 }
 
