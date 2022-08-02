@@ -18,77 +18,52 @@
 	Only supports signed 16-bit PCM .WAV files
 */
 
-unsigned char two_byte_buffer[2];
-unsigned char four_byte_buffer[4];
-
-// Converts an array of two bytes in little-endian form to big-endian form
-uint16_t convert_16_to_big_endian(unsigned char* little_endian) {
-	uint16_t big_endian = little_endian[0] | (little_endian[1] << 8);
-	return big_endian;
-}
-
-// Converts a 16-bit unsigned int in big-endian form to an array of two bytes in little-endian form
-unsigned char* convert_16_to_little_endian(uint16_t big_endian) {
-	two_byte_buffer[0] = big_endian & 0x00FF;
-	two_byte_buffer[1] = (big_endian & 0xFF00) >> 8;
-	return two_byte_buffer;
-}
-
-// Converts an array of four bytes in little-endian form to big-endian form
-uint32_t convert_32_to_big_endian(unsigned char* little_endian) {
-	uint32_t big_endian = little_endian[0] | (little_endian[1] << 8) | (little_endian[2] << 16) | (little_endian[3] << 24);
-	return big_endian;
-}
-
-// Converts a 32-bit unsigned int in big-endian form to an array of four bytes in little-endian form
-unsigned char* convert_32_to_little_endian(uint32_t big_endian) {
-	four_byte_buffer[0] = big_endian & 0x000000FF;
-	four_byte_buffer[1] = (big_endian & 0x0000FF00) >> 8;
-	four_byte_buffer[2] = (big_endian & 0x00FF0000) >> 16;
-	four_byte_buffer[3] = (big_endian & 0xFF000000) >> 24;
-	return four_byte_buffer;
-}
-
 // Reads a .wav file into the global Wave struct
 uint32_t read_wav(Wave* wave_ptr, FILE* input_file) {
 
 	uint32_t num_samples;
+	unsigned char header_buffer[44];
+	
+	fread(header_buffer, sizeof(unsigned char), 44, input_file);
 
 	// Read header
-	fread(wave_ptr->header.riff, sizeof(wave_ptr->header.riff), 1, input_file);
+	wave_ptr->header.riff[0] = header_buffer[0];
+	wave_ptr->header.riff[1] = header_buffer[1];
+	wave_ptr->header.riff[2] = header_buffer[2];
+	wave_ptr->header.riff[3] = header_buffer[3];
+	
+	wave_ptr->header.total_size = header_buffer[4] | (header_buffer[5] << 8) | (header_buffer[6] << 16) | (header_buffer[7] << 24);
 
-	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave_ptr->header.total_size = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.type[0] = header_buffer[8];
+	wave_ptr->header.type[1] = header_buffer[9];
+	wave_ptr->header.type[2] = header_buffer[10];
+	wave_ptr->header.type[3] = header_buffer[11];
 
-	fread(wave_ptr->header.type, sizeof(wave_ptr->header.type), 1, input_file);
+	wave_ptr->header.fmt_marker[0] = header_buffer[12];
+	wave_ptr->header.fmt_marker[1] = header_buffer[13];
+	wave_ptr->header.fmt_marker[2] = header_buffer[14];
+	wave_ptr->header.fmt_marker[3] = header_buffer[15];
 
-	fread(wave_ptr->header.fmt_marker, sizeof(wave_ptr->header.fmt_marker), 1, input_file);
+	wave_ptr->header.fmt_length = header_buffer[16] | (header_buffer[17] << 8) | (header_buffer[18] << 16) | (header_buffer[19] << 24);
 
-	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave_ptr->header.fmt_length = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.fmt_type = header_buffer[20] | (header_buffer[21] << 8);
 
-	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave_ptr->header.fmt_type = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.num_channels = header_buffer[22] | (header_buffer[23] << 8);
 
-	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave_ptr->header.num_channels = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.sample_rate = header_buffer[24] | (header_buffer[25] << 8) | (header_buffer[26] << 16) | (header_buffer[27] << 24);
 
-	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave_ptr->header.sample_rate = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.byte_rate = header_buffer[28] | (header_buffer[29] << 8) | (header_buffer[30] << 16) | (header_buffer[31] << 24);
 
-	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave_ptr->header.byte_rate = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.block_align = header_buffer[32] | (header_buffer[33] << 8);
 
-	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave_ptr->header.block_align = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.bits_per_sample = header_buffer[34] | (header_buffer[35] << 8);
 
-	fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-	wave_ptr->header.bits_per_sample = convert_16_to_big_endian(two_byte_buffer);
+	wave_ptr->header.data_marker[0] = header_buffer[36];
+	wave_ptr->header.data_marker[1] = header_buffer[37];
+	wave_ptr->header.data_marker[2] = header_buffer[38];
+	wave_ptr->header.data_marker[3] = header_buffer[39];
 
-	fread(wave_ptr->header.data_marker, sizeof(wave_ptr->header.data_marker), 1, input_file);
-
-	fread(four_byte_buffer, sizeof(four_byte_buffer), 1, input_file);
-	wave_ptr->header.data_length = convert_32_to_big_endian(four_byte_buffer);
+	wave_ptr->header.data_length = header_buffer[40] | (header_buffer[41] << 8) | (header_buffer[42] << 16) | (header_buffer[43] << 24);
 
 	// Calculate some useful numbers
 	uint16_t bytes_per_sample = (wave_ptr->header.bits_per_sample * wave_ptr->header.num_channels) / 8;
@@ -102,60 +77,17 @@ uint32_t read_wav(Wave* wave_ptr, FILE* input_file) {
 	}
 
 	// Read the sample data from the .wav file into the Wave struct
-	int i;
-	for (i = 0; i < num_samples; i++) {
-		fread(two_byte_buffer, sizeof(two_byte_buffer), 1, input_file);
-		wave_ptr->samples[i] = (int16_t)convert_16_to_big_endian(two_byte_buffer);
-	}
+	fread(wave_ptr->samples, bytes_per_sample, num_samples, input_file);
 
-	printf("Read file\n");
 	return num_samples;
 }
 
 void write_wav(Wave* wave_ptr, uint32_t num_samples, FILE* output_file) {
-	
-	// Write to header
-	fwrite(wave_ptr->header.riff, sizeof(wave_ptr->header.riff), 1, output_file);
-
-	convert_32_to_little_endian(wave_ptr->header.total_size);
-	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
-
-	fwrite(wave_ptr->header.type, sizeof(wave_ptr->header.type), 1, output_file);
-
-	fwrite(wave_ptr->header.fmt_marker, sizeof(wave_ptr->header.fmt_marker), 1, output_file);
-
-	convert_32_to_little_endian(wave_ptr->header.fmt_length);
-	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
-
-	convert_16_to_little_endian(wave_ptr->header.fmt_type);
-	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
-
-	convert_16_to_little_endian(wave_ptr->header.num_channels);
-	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
-
-	convert_32_to_little_endian(wave_ptr->header.sample_rate);
-	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
-
-	convert_32_to_little_endian(wave_ptr->header.byte_rate);
-	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
-
-	convert_16_to_little_endian(wave_ptr->header.block_align);
-	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
-
-	convert_16_to_little_endian(wave_ptr->header.bits_per_sample);
-	fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
-
-	fwrite(wave_ptr->header.data_marker, sizeof(wave_ptr->header.data_marker), 1, output_file);
-
-	convert_32_to_little_endian(wave_ptr->header.data_length);
-	fwrite(four_byte_buffer, sizeof(four_byte_buffer), 1, output_file);
+	// Write header
+	fwrite(&wave_ptr->header, sizeof(unsigned char), 44, output_file);
 
 	// Write data
-	int i;
-	for (i = 0; i < num_samples; i++) {
-		convert_16_to_little_endian((uint16_t)wave_ptr->samples[i]);
-		fwrite(two_byte_buffer, sizeof(two_byte_buffer), 1, output_file);
-	}
+	fwrite(wave_ptr->samples, sizeof(uint16_t), num_samples, output_file);
 }
 
 uint8_t* compress_data(Wave* wave_ptr, uint32_t num_samples) {
@@ -361,7 +293,6 @@ int main(int argc, char* argv[]) {
 	FILE* output_file;
 	Wave* wave_ptr, wave;
 	wave_ptr = &wave;
-	printf("%u\n", sizeof(wave_ptr->header));
 	time_t start, end;
 
 	// Check args length
@@ -435,6 +366,5 @@ int main(int argc, char* argv[]) {
 	free(wave_ptr->samples);
 	free(compressed_samples);
 	
-	//test();
 	exit(0);
 }
