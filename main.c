@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include "main.h"
 
@@ -20,7 +20,8 @@ uint32_t num_samples;
 uint16_t bytes_per_sample;
 unsigned char two_byte_buffer[2];
 unsigned char four_byte_buffer[4];
-time_t start, end;
+struct timeval start, end;
+int elapsed;
 
 // Converts an array of two bytes in little-endian form to big-endian form
 uint16_t convert_16_to_big_endian(unsigned char* little_endian) {
@@ -338,44 +339,14 @@ void print_header() {
 	printf("(40-44):\t Data Length: %u bytes, %ukb\n", wave.header.data_length, wave.header.data_length / 1024);
 	printf("==============================================\n\n");
 	printf("Number of Samples: %u\n", num_samples);
-	printf("Bytes per Sample: %u\n\n", bytes_per_sample);
-}
-
-// Prints the samples in big-endian format
-void print_samples() {
-	int i;
-	for (i = 0; i < num_samples; i++) {
-		printf("[%i]: %x\n", i, wave.samples[i]);
-	}
-}
-
-void test() {
-	uint16_t input = 10102 << 2;
-	printf("Input: %x\n", input);
-	int16_t sample = (int16_t)input; // Only 14 bits are needed for mu-Law
-	sample = sample >> 2;
-	printf("Sample: %i\n", sample);
-
-	// Convert the sample into sign-magnitude representation
-	uint8_t sign = signum(sample);
-	uint16_t mag = magnitude(sample) + 33; // Bias of 33 added so that each threshold is a power of 2
-
-	// Find the codeword according to the mu-law encoding table
-	uint8_t codeword = get_codeword(sign, mag);
-
-	// Perform bit-wise inversion of the codeword
-	// codeword = ~codeword;
-	printf("Codeword: %x\n", codeword);
-
-	sign = compressed_signum(codeword);
-	printf("Sign: %x\n", sign);
-	mag = compressed_magnitude(codeword) - 33;
-	printf("Mag: %x\n", mag);
-	sample = (sign << 13) | mag;
-	printf("Sample: %i\n", (int16_t)sample);
+	printf("Bytes per Sample: %u\n", bytes_per_sample);
 }
 
 int main(int argc, char* argv[]) {
+
+	// Get start time
+	gettimeofday(&start, NULL);
+
 	// Check args length
 	if (argc < 3) {
 		printf("Please provide both an input and output filepath\n");
@@ -392,7 +363,7 @@ int main(int argc, char* argv[]) {
 	strcpy(input_filepath, cwd);
 	strcat(input_filepath, "/");
 	strcat(input_filepath, argv[1]);
-	printf("\nUsing file: %s\n\n", input_filepath);
+	printf("\nUsing file: %s\n", input_filepath);
 
 	// Open file
 	input_file = fopen(input_filepath, "rb");
@@ -410,27 +381,18 @@ int main(int argc, char* argv[]) {
 	// Print wave.header info
 	print_header();
 
-	// Print wave.samples data
-	// print_samples();
-
 	// Compress its contents
-	start = clock();
 	compress_data();
-	end = clock();
-	printf("Compressed %u samples in %us\n", num_samples, (uint32_t)((end - start) / CLOCKS_PER_SEC));
 
 	// Decompress its contents
-	start = clock();
 	decompress_data();
-	end = clock();
-	printf("Decompressed %u samples in %us\n\n", num_samples, (uint32_t)((end - start) / CLOCKS_PER_SEC));
 	
 	// Build output filepath
 	char output_filepath[1024];
 	strcpy(output_filepath, cwd);
 	strcat(output_filepath, "/");
 	strcat(output_filepath, argv[2]);
-	printf("\nSaving to file: %s\n\n", output_filepath);
+	printf("\nSaving to file: %s\n", output_filepath);
 	
 	// Create file
 	output_file = fopen(output_filepath, "wb");
@@ -442,10 +404,15 @@ int main(int argc, char* argv[]) {
 	// Write to file
 	write_wav();
 
-	// Close and exit
+	// Close and free all memory
 	fclose(output_file);
 	free(wave.samples);
 	free(compressed_wave.samples);
+
+	// Get end time
+	gettimeofday(&end, NULL);
+	elapsed = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
+	printf("Unoptimized Runtime: %d microseconds\n\n", elapsed);
 	
 	//test();
 	exit(0);

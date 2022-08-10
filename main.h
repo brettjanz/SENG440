@@ -31,7 +31,6 @@ unsigned char* convert_16_to_little_endian(uint16_t big_endian);
 uint32_t convert_32_to_big_endian(unsigned char* little_endian);
 unsigned char* convert_32_to_little_endian(uint32_t big_endian);
 
-void test();
 void read_wav();
 void write_wav();
 void print_header();

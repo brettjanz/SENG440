@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include "main_optimized.h"
 
@@ -762,6 +763,11 @@ int main(int argc, char* argv[]) {
 	FILE* output_file;
 	Wave* wave_ptr, wave;
 	wave_ptr = &wave;
+	struct timeval start, end;
+	int elapsed;
+
+	// Get start time
+	gettimeofday(&start, NULL);
 
 	// Check args length
 	if (argc < 3) {
@@ -818,10 +824,15 @@ int main(int argc, char* argv[]) {
 	// Write data
 	fwrite(wave_ptr->samples, sizeof(uint16_t), num_samples, output_file);
 
-	// Close and exit
+	// Close and free memory
 	fclose(output_file);
 	free(wave_ptr->samples);
 	free(compressed_samples);
+
+	// Get end time
+	gettimeofday(&end, NULL);
+	elapsed = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
+	printf("Optimized Runtime: %d microseconds\n", elapsed);
 	
 	exit(0);
 }
