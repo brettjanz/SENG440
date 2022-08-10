@@ -3,14 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
-#if defined __has_include
-#  if __has_include (<direct.h>)
-#    include <direct.h>
-#  endif
-#else
-#  include <unistd.h>
-#  define _getcwd getcwd
-#endif
+#include <unistd.h>
 #include "main.h"
 
 
@@ -392,7 +385,7 @@ int main(int argc, char* argv[]) {
 	// Build input filepath
 	char cwd[1024];
 	char input_filepath[1024];
-	if (_getcwd(cwd, sizeof(cwd)) == NULL) {
+	if (getcwd(cwd, sizeof(cwd)) == NULL) {
 		printf("Error getting working directory\n");
 		exit(1);
 	}
