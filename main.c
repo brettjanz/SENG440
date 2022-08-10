@@ -238,7 +238,7 @@ uint8_t get_codeword(uint8_t sign, uint16_t mag) {
 	return (sign << 7) | (chord << 4) | step;
 }
 
-// Returns opposite of codeword's 16th bit
+// Returns opposite of sample's 16th bit
 uint8_t signum(int16_t sample) {
 	return sample & (1 << 15) ? 0 : 1;
 }
