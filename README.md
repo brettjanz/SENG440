@@ -49,7 +49,6 @@ We can save on overhead by reducing the number of iterations performed in `for` 
 - `decompress_data()` now operates in blocks of 8 samples with a switch case handling the modulo remainder
 - `decompress_data()` now uses a single-statement `while` loop instead of a three-statement `for` loop
 
-## Print Statements and Timers
-Calls to `printf()` and debug timers are slow and unnecessary in an embedded system
-- All non-error `printf()` calls have been removed
-- All timer functions have been removed
+## Print Statements
+Calls to `printf()` are slow and unnecessary in an embedded system
+- All non-error, non-timer `printf()` calls have been removed
