@@ -52,4 +52,3 @@ We can save on overhead by reducing the number of iterations performed in `for` 
 ## Print Statements and Timers
 Calls to `printf()` and debug timers are slow and unnecessary in an embedded system
 - All non-error `printf()` calls have been removed
-- All timer functions have been removed
