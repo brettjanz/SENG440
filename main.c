@@ -29,17 +29,21 @@ uint16_t convert_16_to_big_endian(unsigned char* little_endian) {
 	return big_endian;
 }
 
+// Converts an array of four bytes in little-endian form to big-endian form
+uint32_t convert_32_to_big_endian(unsigned char* little_endian) {
+	uint32_t big_endian = \
+		little_endian[0] | \
+		(little_endian[1] << 8) | \
+		(little_endian[2] << 16) | \
+		(little_endian[3] << 24);
+	return big_endian;
+}
+
 // Converts a 16-bit unsigned int in big-endian form to an array of two bytes in little-endian form
 unsigned char* convert_16_to_little_endian(uint16_t big_endian) {
 	two_byte_buffer[0] = big_endian & 0x00FF;
 	two_byte_buffer[1] = (big_endian & 0xFF00) >> 8;
 	return two_byte_buffer;
-}
-
-// Converts an array of four bytes in little-endian form to big-endian form
-uint32_t convert_32_to_big_endian(unsigned char* little_endian) {
-	uint32_t big_endian = little_endian[0] | (little_endian[1] << 8) | (little_endian[2] << 16) | (little_endian[3] << 24);
-	return big_endian;
 }
 
 // Converts a 32-bit unsigned int in big-endian form to an array of four bytes in little-endian form
@@ -170,9 +174,7 @@ void compress_data() {
 
 	int i;
 	for (i = 0; i < num_samples; i++) {
-		// printf("Full Sample: %i\n", wave.samples[i]);
 		sample = (wave.samples[i] >> 2); // Only 14 bits are needed for mu-Law
-		// printf("Sample[14]: %i\n", sample);
 
 		// Convert the sample into sign-magnitude representation
 		sign = signum(sample);
@@ -180,7 +182,6 @@ void compress_data() {
 
 		// Find the codeword according to the mu-law encoding table
 		codeword = get_codeword(sign, mag);
-		// printf("Codeword: %i\n", codeword);
 
 		// Perform bit-wise inversion of the codeword
 		codeword = ~codeword;
@@ -233,10 +234,6 @@ uint8_t get_codeword(uint8_t sign, uint16_t mag) {
 		exit(1);
 	}
 
-	// printf("New Sign: %i\n", sign);
-	// printf("Magnitude: %i\n", mag);
-	// printf("Chord: %i\n", chord);
-	// printf("Step: %i\n", step);
 	// Assemble the sign, chord, and step bits into a compressed codeword
 	return (sign << 7) | (chord << 4) | step;
 }
@@ -262,10 +259,7 @@ uint16_t magnitude(int16_t sample) {
 
 uint16_t compressed_magnitude(uint8_t codeword) {
 	uint8_t chord = (codeword >> 4) & 0x7;
-	// printf("Chord: %i\n", chord);
 	uint8_t step = codeword & 0xF;
-	// printf("Step: %i\n", step);
-	uint16_t res;
 
 	if (chord == 0x7) {
 		return (1 << 12) | (step << 8) | (1 << 7);
@@ -308,16 +302,11 @@ void decompress_data() {
 	for (i = 0; i < num_samples; i++) {
 		codeword = compressed_wave.samples[i];
 		codeword = ~codeword;
-		// printf("Decompressed Codeword: %i\n", codeword);
 		sign = compressed_signum(codeword);
 		mag = compressed_magnitude(codeword);
-		// printf("Decompressed Sign: %i\n", sign);
-		// printf("Biased Magnitude: %i\n", mag);
 		mag -= 33;
 		sample = (int16_t)(sign ? -mag : mag);
-		// printf("Decompressed Sample [14]: %i\n", sample);
 		wave.samples[i] = (sample << 2);
-		// printf("Full Decompressed Sample: %i\n\n\n", wave.samples[i]);
 	}
 }
 
@@ -414,6 +403,5 @@ int main(int argc, char* argv[]) {
 	elapsed = ((end.tv_sec - start.tv_sec) * 1000000) + (end.tv_usec - start.tv_usec);
 	printf("Unoptimized Runtime: %d microseconds\n\n", elapsed);
 	
-	//test();
 	exit(0);
 }

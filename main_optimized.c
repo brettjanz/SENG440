@@ -437,7 +437,6 @@ uint8_t get_codeword(uint8_t sign, uint16_t mag) {
 uint16_t compressed_magnitude(uint8_t codeword) {
 	uint8_t chord = (codeword >> 4) & 0x7;
 	uint8_t step = codeword & 0xF;
-	uint16_t res;
 
 	switch (chord) {
 		case 0x0:

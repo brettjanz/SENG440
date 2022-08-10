@@ -34,7 +34,6 @@ unsigned char* convert_32_to_little_endian(uint32_t big_endian);
 void read_wav();
 void write_wav();
 void print_header();
-void print_samples();
 void compress_data();
 void decompress_data();
 uint8_t signum(int16_t sample);
