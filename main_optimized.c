@@ -83,300 +83,47 @@ uint8_t* compress_data(Wave* wave_ptr, uint32_t num_samples) {
 		exit(1);
 	}
 
-	int16_t sample1, sample2, sample3, sample4, sample5, sample6, sample7, sample8;
-	uint16_t mag1, mag2, mag3, mag4, mag5, mag6, mag7, mag8;
-	uint8_t sign1, sign2, sign3, sign4, sign5, sign6, sign7, sign8;
-	uint8_t codeword1, codeword2, codeword3, codeword4, codeword5, codeword6, codeword7, codeword8;
+	int16_t sample1, sample2;
+	uint16_t mag1, mag2;
+	uint8_t sign1, sign2;
+	uint8_t codeword1, codeword2;
 
 	int i = 0;
-	while (num_samples >= 8){
+	while (num_samples >= 2){
 		sample1 = (wave_ptr->samples[i] >> 2);
 		sample2 = (wave_ptr->samples[i + 1] >> 2);
-		sample3 = (wave_ptr->samples[i + 2] >> 2);
-		sample4 = (wave_ptr->samples[i + 3] >> 2);
-		sample5 = (wave_ptr->samples[i + 4] >> 2);
-		sample6 = (wave_ptr->samples[i + 5] >> 2);
-		sample7 = (wave_ptr->samples[i + 6] >> 2);
-		sample8 = (wave_ptr->samples[i + 7] >> 2);
 
 		sign1 = sample1 & (1 << 15) ? 0 : 1;
 		sign2 = sample2 & (1 << 15) ? 0 : 1;
-		sign3 = sample3 & (1 << 15) ? 0 : 1;
-		sign4 = sample4 & (1 << 15) ? 0 : 1;
-		sign5 = sample5 & (1 << 15) ? 0 : 1;
-		sign6 = sample6 & (1 << 15) ? 0 : 1;
-		sign7 = sample7 & (1 << 15) ? 0 : 1;
-		sign8 = sample8 & (1 << 15) ? 0 : 1;
 
 		mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
 		mag2 = (uint16_t) (sample2 < 0 ? -sample2  : sample2) + 33;
-		mag3 = (uint16_t) (sample3 < 0 ? -sample3  : sample3) + 33;
-		mag4 = (uint16_t) (sample4 < 0 ? -sample4  : sample4) + 33;
-		mag5 = (uint16_t) (sample5 < 0 ? -sample5  : sample5) + 33;
-		mag6 = (uint16_t) (sample6 < 0 ? -sample6  : sample6) + 33;
-		mag7 = (uint16_t) (sample7 < 0 ? -sample7  : sample7) + 33;
-		mag8 = (uint16_t) (sample8 < 0 ? -sample8  : sample8) + 33;
 
 		codeword1 = get_codeword(sign1, mag1);
 		codeword2 = get_codeword(sign2, mag2);
-		codeword3 = get_codeword(sign3, mag3);
-		codeword4 = get_codeword(sign4, mag4);
-		codeword5 = get_codeword(sign5, mag5);
-		codeword6 = get_codeword(sign6, mag6);
-		codeword7 = get_codeword(sign7, mag7);
-		codeword8 = get_codeword(sign8, mag8);
 
 		codeword1 = ~codeword1;
 		codeword2 = ~codeword2;
-		codeword3 = ~codeword3;
-		codeword4 = ~codeword4;
-		codeword5 = ~codeword5;
-		codeword6 = ~codeword6;
-		codeword7 = ~codeword7;
-		codeword8 = ~codeword8;
 
 		compressed_samples[i] = codeword1;
 		compressed_samples[i + 1] = codeword2;
-		compressed_samples[i + 2] = codeword3;
-		compressed_samples[i + 3] = codeword4;
-		compressed_samples[i + 4] = codeword5;
-		compressed_samples[i + 5] = codeword6;
-		compressed_samples[i + 6] = codeword7;
-		compressed_samples[i + 7] = codeword8;
 
-		num_samples -= 8;
-		i += 8;
+		num_samples -= 2;
+		i += 2;
 	}
 
-	switch (num_samples){
-		case 7:
-			sample1 = (wave_ptr->samples[i] >> 2);
-			sample2 = (wave_ptr->samples[i + 1] >> 2);
-			sample3 = (wave_ptr->samples[i + 2] >> 2);
-			sample4 = (wave_ptr->samples[i + 3] >> 2);
-			sample5 = (wave_ptr->samples[i + 4] >> 2);
-			sample6 = (wave_ptr->samples[i + 5] >> 2);
-			sample7 = (wave_ptr->samples[i + 6] >> 2);
+	if (num_samples > 0){
+		sample1 = (wave_ptr->samples[i] >> 2);
 
-			sign1 = sample1 & (1 << 15) ? 0 : 1;
-			sign2 = sample2 & (1 << 15) ? 0 : 1;
-			sign3 = sample3 & (1 << 15) ? 0 : 1;
-			sign4 = sample4 & (1 << 15) ? 0 : 1;
-			sign5 = sample5 & (1 << 15) ? 0 : 1;
-			sign6 = sample6 & (1 << 15) ? 0 : 1;
-			sign7 = sample7 & (1 << 15) ? 0 : 1;
+		sign1 = sample1 & (1 << 15) ? 0 : 1;
 
-			mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
-			mag2 = (uint16_t) (sample2 < 0 ? -sample2  : sample2) + 33;
-			mag3 = (uint16_t) (sample3 < 0 ? -sample3  : sample3) + 33;
-			mag4 = (uint16_t) (sample4 < 0 ? -sample4  : sample4) + 33;
-			mag5 = (uint16_t) (sample5 < 0 ? -sample5  : sample5) + 33;
-			mag6 = (uint16_t) (sample6 < 0 ? -sample6  : sample6) + 33;
-			mag7 = (uint16_t) (sample7 < 0 ? -sample7  : sample7) + 33;
+		mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
 
-			codeword1 = get_codeword(sign1, mag1);
-			codeword2 = get_codeword(sign2, mag2);
-			codeword3 = get_codeword(sign3, mag3);
-			codeword4 = get_codeword(sign4, mag4);
-			codeword5 = get_codeword(sign5, mag5);
-			codeword6 = get_codeword(sign6, mag6);
-			codeword7 = get_codeword(sign7, mag7);
+		codeword1 = get_codeword(sign1, mag1);
 
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-			codeword5 = ~codeword5;
-			codeword6 = ~codeword6;
-			codeword7 = ~codeword7;
+		codeword1 = ~codeword1;
 
-			compressed_samples[i] = codeword1;
-			compressed_samples[i + 1] = codeword2;
-			compressed_samples[i + 2] = codeword3;
-			compressed_samples[i + 3] = codeword4;
-			compressed_samples[i + 4] = codeword5;
-			compressed_samples[i + 5] = codeword6;
-			compressed_samples[i + 6] = codeword7;
-			break;
-		
-		case 6:
-			sample1 = (wave_ptr->samples[i] >> 2);
-			sample2 = (wave_ptr->samples[i + 1] >> 2);
-			sample3 = (wave_ptr->samples[i + 2] >> 2);
-			sample4 = (wave_ptr->samples[i + 3] >> 2);
-			sample5 = (wave_ptr->samples[i + 4] >> 2);
-			sample6 = (wave_ptr->samples[i + 5] >> 2);
-
-			sign1 = sample1 & (1 << 15) ? 0 : 1;
-			sign2 = sample2 & (1 << 15) ? 0 : 1;
-			sign3 = sample3 & (1 << 15) ? 0 : 1;
-			sign4 = sample4 & (1 << 15) ? 0 : 1;
-			sign5 = sample5 & (1 << 15) ? 0 : 1;
-			sign6 = sample6 & (1 << 15) ? 0 : 1;
-
-			mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
-			mag2 = (uint16_t) (sample2 < 0 ? -sample2  : sample2) + 33;
-			mag3 = (uint16_t) (sample3 < 0 ? -sample3  : sample3) + 33;
-			mag4 = (uint16_t) (sample4 < 0 ? -sample4  : sample4) + 33;
-			mag5 = (uint16_t) (sample5 < 0 ? -sample5  : sample5) + 33;
-			mag6 = (uint16_t) (sample6 < 0 ? -sample6  : sample6) + 33;
-
-			codeword1 = get_codeword(sign1, mag1);
-			codeword2 = get_codeword(sign2, mag2);
-			codeword3 = get_codeword(sign3, mag3);
-			codeword4 = get_codeword(sign4, mag4);
-			codeword5 = get_codeword(sign5, mag5);
-			codeword6 = get_codeword(sign6, mag6);
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-			codeword5 = ~codeword5;
-			codeword6 = ~codeword6;
-
-			compressed_samples[i] = codeword1;
-			compressed_samples[i + 1] = codeword2;
-			compressed_samples[i + 2] = codeword3;
-			compressed_samples[i + 3] = codeword4;
-			compressed_samples[i + 4] = codeword5;
-			compressed_samples[i + 5] = codeword6;
-			break;
-
-		case 5:
-			sample1 = (wave_ptr->samples[i] >> 2);
-			sample2 = (wave_ptr->samples[i + 1] >> 2);
-			sample3 = (wave_ptr->samples[i + 2] >> 2);
-			sample4 = (wave_ptr->samples[i + 3] >> 2);
-			sample5 = (wave_ptr->samples[i + 4] >> 2);
-
-			sign1 = sample1 & (1 << 15) ? 0 : 1;
-			sign2 = sample2 & (1 << 15) ? 0 : 1;
-			sign3 = sample3 & (1 << 15) ? 0 : 1;
-			sign4 = sample4 & (1 << 15) ? 0 : 1;
-			sign5 = sample5 & (1 << 15) ? 0 : 1;
-
-			mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
-			mag2 = (uint16_t) (sample2 < 0 ? -sample2  : sample2) + 33;
-			mag3 = (uint16_t) (sample3 < 0 ? -sample3  : sample3) + 33;
-			mag4 = (uint16_t) (sample4 < 0 ? -sample4  : sample4) + 33;
-			mag5 = (uint16_t) (sample5 < 0 ? -sample5  : sample5) + 33;
-
-			codeword1 = get_codeword(sign1, mag1);
-			codeword2 = get_codeword(sign2, mag2);
-			codeword3 = get_codeword(sign3, mag3);
-			codeword4 = get_codeword(sign4, mag4);
-			codeword5 = get_codeword(sign5, mag5);
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-			codeword5 = ~codeword5;
-
-			compressed_samples[i] = codeword1;
-			compressed_samples[i + 1] = codeword2;
-			compressed_samples[i + 2] = codeword3;
-			compressed_samples[i + 3] = codeword4;
-			compressed_samples[i + 4] = codeword5;
-
-			break;
-
-		case 4:
-			sample1 = (wave_ptr->samples[i] >> 2);
-			sample2 = (wave_ptr->samples[i + 1] >> 2);
-			sample3 = (wave_ptr->samples[i + 2] >> 2);
-			sample4 = (wave_ptr->samples[i + 3] >> 2);
-
-			sign1 = sample1 & (1 << 15) ? 0 : 1;
-			sign2 = sample2 & (1 << 15) ? 0 : 1;
-			sign3 = sample3 & (1 << 15) ? 0 : 1;
-			sign4 = sample4 & (1 << 15) ? 0 : 1;
-
-			mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
-			mag2 = (uint16_t) (sample2 < 0 ? -sample2  : sample2) + 33;
-			mag3 = (uint16_t) (sample3 < 0 ? -sample3  : sample3) + 33;
-			mag4 = (uint16_t) (sample4 < 0 ? -sample4  : sample4) + 33;
-
-			codeword1 = get_codeword(sign1, mag1);
-			codeword2 = get_codeword(sign2, mag2);
-			codeword3 = get_codeword(sign3, mag3);
-			codeword4 = get_codeword(sign4, mag4);
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-
-			compressed_samples[i] = codeword1;
-			compressed_samples[i + 1] = codeword2;
-			compressed_samples[i + 2] = codeword3;
-			compressed_samples[i + 3] = codeword4;
-			break;
-
-		case 3:
-			sample1 = (wave_ptr->samples[i] >> 2);
-			sample2 = (wave_ptr->samples[i + 1] >> 2);
-			sample3 = (wave_ptr->samples[i + 2] >> 2);
-
-			sign1 = sample1 & (1 << 15) ? 0 : 1;
-			sign2 = sample2 & (1 << 15) ? 0 : 1;
-			sign3 = sample3 & (1 << 15) ? 0 : 1;
-
-			mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
-			mag2 = (uint16_t) (sample2 < 0 ? -sample2  : sample2) + 33;
-			mag3 = (uint16_t) (sample3 < 0 ? -sample3  : sample3) + 33;
-
-			codeword1 = get_codeword(sign1, mag1);
-			codeword2 = get_codeword(sign2, mag2);
-			codeword3 = get_codeword(sign3, mag3);
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-
-			compressed_samples[i] = codeword1;
-			compressed_samples[i + 1] = codeword2;
-			compressed_samples[i + 2] = codeword3;
-			break;
-
-		case 2:
-			sample1 = (wave_ptr->samples[i] >> 2);
-			sample2 = (wave_ptr->samples[i + 1] >> 2);
-
-			sign1 = sample1 & (1 << 15) ? 0 : 1;
-			sign2 = sample2 & (1 << 15) ? 0 : 1;
-
-			mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
-			mag2 = (uint16_t) (sample2 < 0 ? -sample2  : sample2) + 33;
-
-			codeword1 = get_codeword(sign1, mag1);
-			codeword2 = get_codeword(sign2, mag2);
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-
-			compressed_samples[i] = codeword1;
-			compressed_samples[i + 1] = codeword2;
-			break;
-
-		case 1:
-			sample1 = (wave_ptr->samples[i] >> 2);
-
-			sign1 = sample1 & (1 << 15) ? 0 : 1;
-
-			mag1 = (uint16_t) (sample1 < 0 ? -sample1  : sample1) + 33;
-
-			codeword1 = get_codeword(sign1, mag1);
-
-			codeword1 = ~codeword1;
-
-			compressed_samples[i] = codeword1;
-			break;
-
-		default:
-			printf("Error compressing samples\n");
-			exit(1);
+		compressed_samples[i] = codeword1;
 	}
 
 	return compressed_samples;
@@ -464,295 +211,47 @@ uint16_t compressed_magnitude(uint8_t codeword) {
 // Performs the compression steps in reverse according to the mu-law decoding table to get back a full 16 bit sample
 void decompress_data(Wave* wave_ptr, uint32_t num_samples, uint8_t* compressed_samples) {
 	
-	int16_t sample1, sample2, sample3, sample4, sample5, sample6, sample7, sample8;
-	uint16_t mag1, mag2, mag3, mag4, mag5, mag6, mag7, mag8;
-	uint8_t sign1, sign2, sign3, sign4, sign5, sign6, sign7, sign8;
-	uint8_t codeword1, codeword2, codeword3, codeword4, codeword5, codeword6, codeword7, codeword8;
+	int16_t sample1, sample2;
+	uint16_t mag1, mag2;
+	uint8_t sign1, sign2;
+	uint8_t codeword1, codeword2;
 
 	int i = 0;
-	while (num_samples >= 8){
+	while (num_samples >= 2){
 		codeword1 = compressed_samples[i];
 		codeword2 = compressed_samples[i + 1];
-		codeword3 = compressed_samples[i + 2];
-		codeword4 = compressed_samples[i + 3];
-		codeword5 = compressed_samples[i + 4];
-		codeword6 = compressed_samples[i + 5];
-		codeword7 = compressed_samples[i + 6];
-		codeword8 = compressed_samples[i + 7];
 
 		codeword1 = ~codeword1;
 		codeword2 = ~codeword2;
-		codeword3 = ~codeword3;
-		codeword4 = ~codeword4;
-		codeword5 = ~codeword5;
-		codeword6 = ~codeword6;
-		codeword7 = ~codeword7;
-		codeword8 = ~codeword8;
 
 		sign1 = codeword1 & (1 << 7) ? 0 : 1;
 		sign2 = codeword2 & (1 << 7) ? 0 : 1;
-		sign3 = codeword3 & (1 << 7) ? 0 : 1;
-		sign4 = codeword4 & (1 << 7) ? 0 : 1;
-		sign5 = codeword5 & (1 << 7) ? 0 : 1;
-		sign6 = codeword6 & (1 << 7) ? 0 : 1;
-		sign7 = codeword7 & (1 << 7) ? 0 : 1;
-		sign8 = codeword8 & (1 << 7) ? 0 : 1;
 
 		mag1 = compressed_magnitude(codeword1) - 33;
 		mag2 = compressed_magnitude(codeword2) - 33;
-		mag3 = compressed_magnitude(codeword3) - 33;
-		mag4 = compressed_magnitude(codeword4) - 33;
-		mag5 = compressed_magnitude(codeword5) - 33;
-		mag6 = compressed_magnitude(codeword6) - 33;
-		mag7 = compressed_magnitude(codeword7) - 33;
-		mag8 = compressed_magnitude(codeword8) - 33;
 
 		sample1 = (int16_t)(sign1 ? -mag1 : mag1);
 		sample2 = (int16_t)(sign2 ? -mag2 : mag2);
-		sample3 = (int16_t)(sign3 ? -mag3 : mag3);
-		sample4 = (int16_t)(sign4 ? -mag4 : mag4);
-		sample5 = (int16_t)(sign5 ? -mag5 : mag5);
-		sample6 = (int16_t)(sign6 ? -mag6 : mag6);
-		sample7 = (int16_t)(sign7 ? -mag7 : mag7);
-		sample8 = (int16_t)(sign8 ? -mag8 : mag8);
 
 		wave_ptr->samples[i] = (sample1 << 2);
 		wave_ptr->samples[i + 1] = (sample2 << 2);
-		wave_ptr->samples[i + 2] = (sample3 << 2);
-		wave_ptr->samples[i + 3] = (sample4 << 2);
-		wave_ptr->samples[i + 4] = (sample5 << 2);
-		wave_ptr->samples[i + 5] = (sample6 << 2);
-		wave_ptr->samples[i + 6] = (sample7 << 2);
-		wave_ptr->samples[i + 7] = (sample8 << 2);
 
-		num_samples -= 8;
-		i += 8;
+		num_samples -= 2;
+		i += 2;
 	}
 
-	switch (num_samples){
-		case 7:
-			codeword1 = compressed_samples[i];
-			codeword2 = compressed_samples[i + 1];
-			codeword3 = compressed_samples[i + 2];
-			codeword4 = compressed_samples[i + 3];
-			codeword5 = compressed_samples[i + 4];
-			codeword6 = compressed_samples[i + 5];
-			codeword7 = compressed_samples[i + 6];
+	if (num_samples > 0){
+		codeword1 = compressed_samples[i];
 
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-			codeword5 = ~codeword5;
-			codeword6 = ~codeword6;
-			codeword7 = ~codeword7;
+		codeword1 = ~codeword1;
 
-			sign1 = codeword1 & (1 << 7) ? 0 : 1;
-			sign2 = codeword2 & (1 << 7) ? 0 : 1;
-			sign3 = codeword3 & (1 << 7) ? 0 : 1;
-			sign4 = codeword4 & (1 << 7) ? 0 : 1;
-			sign5 = codeword5 & (1 << 7) ? 0 : 1;
-			sign6 = codeword6 & (1 << 7) ? 0 : 1;
-			sign7 = codeword7 & (1 << 7) ? 0 : 1;
+		sign1 = codeword1 & (1 << 7) ? 0 : 1;
 
-			mag1 = compressed_magnitude(codeword1) - 33;
-			mag2 = compressed_magnitude(codeword2) - 33;
-			mag3 = compressed_magnitude(codeword3) - 33;
-			mag4 = compressed_magnitude(codeword4) - 33;
-			mag5 = compressed_magnitude(codeword5) - 33;
-			mag6 = compressed_magnitude(codeword6) - 33;
-			mag7 = compressed_magnitude(codeword7) - 33;
+		mag1 = compressed_magnitude(codeword1) - 33;
 
-			sample1 = (int16_t)(sign1 ? -mag1 : mag1);
-			sample2 = (int16_t)(sign2 ? -mag2 : mag2);
-			sample3 = (int16_t)(sign3 ? -mag3 : mag3);
-			sample4 = (int16_t)(sign4 ? -mag4 : mag4);
-			sample5 = (int16_t)(sign5 ? -mag5 : mag5);
-			sample6 = (int16_t)(sign6 ? -mag6 : mag6);
-			sample7 = (int16_t)(sign7 ? -mag7 : mag7);
+		sample1 = (int16_t)(sign1 ? -mag1 : mag1);
 
-			wave_ptr->samples[i] = (sample1 << 2);
-			wave_ptr->samples[i + 1] = (sample2 << 2);
-			wave_ptr->samples[i + 2] = (sample3 << 2);
-			wave_ptr->samples[i + 3] = (sample4 << 2);
-			wave_ptr->samples[i + 4] = (sample5 << 2);
-			wave_ptr->samples[i + 5] = (sample6 << 2);
-			wave_ptr->samples[i + 6] = (sample7 << 2);
-			break;
-
-		case 6:
-			codeword1 = compressed_samples[i];
-			codeword2 = compressed_samples[i + 1];
-			codeword3 = compressed_samples[i + 2];
-			codeword4 = compressed_samples[i + 3];
-			codeword5 = compressed_samples[i + 4];
-			codeword6 = compressed_samples[i + 5];
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-			codeword5 = ~codeword5;
-			codeword6 = ~codeword6;
-
-			sign1 = codeword1 & (1 << 7) ? 0 : 1;
-			sign2 = codeword2 & (1 << 7) ? 0 : 1;
-			sign3 = codeword3 & (1 << 7) ? 0 : 1;
-			sign4 = codeword4 & (1 << 7) ? 0 : 1;
-			sign5 = codeword5 & (1 << 7) ? 0 : 1;
-			sign6 = codeword6 & (1 << 7) ? 0 : 1;
-
-			mag1 = compressed_magnitude(codeword1) - 33;
-			mag2 = compressed_magnitude(codeword2) - 33;
-			mag3 = compressed_magnitude(codeword3) - 33;
-			mag4 = compressed_magnitude(codeword4) - 33;
-			mag5 = compressed_magnitude(codeword5) - 33;
-			mag6 = compressed_magnitude(codeword6) - 33;
-
-			sample1 = (int16_t)(sign1 ? -mag1 : mag1);
-			sample2 = (int16_t)(sign2 ? -mag2 : mag2);
-			sample3 = (int16_t)(sign3 ? -mag3 : mag3);
-			sample4 = (int16_t)(sign4 ? -mag4 : mag4);
-			sample5 = (int16_t)(sign5 ? -mag5 : mag5);
-			sample6 = (int16_t)(sign6 ? -mag6 : mag6);
-
-			wave_ptr->samples[i] = (sample1 << 2);
-			wave_ptr->samples[i + 1] = (sample2 << 2);
-			wave_ptr->samples[i + 2] = (sample3 << 2);
-			wave_ptr->samples[i + 3] = (sample4 << 2);
-			wave_ptr->samples[i + 4] = (sample5 << 2);
-			wave_ptr->samples[i + 5] = (sample6 << 2);
-			break;
-
-		case 5:
-			codeword1 = compressed_samples[i];
-			codeword2 = compressed_samples[i + 1];
-			codeword3 = compressed_samples[i + 2];
-			codeword4 = compressed_samples[i + 3];
-			codeword5 = compressed_samples[i + 4];
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-			codeword5 = ~codeword5;
-
-			sign1 = codeword1 & (1 << 7) ? 0 : 1;
-			sign2 = codeword2 & (1 << 7) ? 0 : 1;
-			sign3 = codeword3 & (1 << 7) ? 0 : 1;
-			sign4 = codeword4 & (1 << 7) ? 0 : 1;
-			sign5 = codeword5 & (1 << 7) ? 0 : 1;
-
-			mag1 = compressed_magnitude(codeword1) - 33;
-			mag2 = compressed_magnitude(codeword2) - 33;
-			mag3 = compressed_magnitude(codeword3) - 33;
-			mag4 = compressed_magnitude(codeword4) - 33;
-			mag5 = compressed_magnitude(codeword5) - 33;
-
-			sample1 = (int16_t)(sign1 ? -mag1 : mag1);
-			sample2 = (int16_t)(sign2 ? -mag2 : mag2);
-			sample3 = (int16_t)(sign3 ? -mag3 : mag3);
-			sample4 = (int16_t)(sign4 ? -mag4 : mag4);
-			sample5 = (int16_t)(sign5 ? -mag5 : mag5);
-
-			wave_ptr->samples[i] = (sample1 << 2);
-			wave_ptr->samples[i + 1] = (sample2 << 2);
-			wave_ptr->samples[i + 2] = (sample3 << 2);
-			wave_ptr->samples[i + 3] = (sample4 << 2);
-			wave_ptr->samples[i + 4] = (sample5 << 2);
-			break;
-
-		case 4:
-			codeword1 = compressed_samples[i];
-			codeword2 = compressed_samples[i + 1];
-			codeword3 = compressed_samples[i + 2];
-			codeword4 = compressed_samples[i + 3];
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-			codeword4 = ~codeword4;
-
-			sign1 = codeword1 & (1 << 7) ? 0 : 1;
-			sign2 = codeword2 & (1 << 7) ? 0 : 1;
-			sign3 = codeword3 & (1 << 7) ? 0 : 1;
-			sign4 = codeword4 & (1 << 7) ? 0 : 1;
-
-			mag1 = compressed_magnitude(codeword1) - 33;
-			mag2 = compressed_magnitude(codeword2) - 33;
-			mag3 = compressed_magnitude(codeword3) - 33;
-			mag4 = compressed_magnitude(codeword4) - 33;
-
-			sample1 = (int16_t)(sign1 ? -mag1 : mag1);
-			sample2 = (int16_t)(sign2 ? -mag2 : mag2);
-			sample3 = (int16_t)(sign3 ? -mag3 : mag3);
-			sample4 = (int16_t)(sign4 ? -mag4 : mag4);
-
-			wave_ptr->samples[i] = (sample1 << 2);
-			wave_ptr->samples[i + 1] = (sample2 << 2);
-			wave_ptr->samples[i + 2] = (sample3 << 2);
-			wave_ptr->samples[i + 3] = (sample4 << 2);
-			break;
-
-		case 3:
-			codeword1 = compressed_samples[i];
-			codeword2 = compressed_samples[i + 1];
-			codeword3 = compressed_samples[i + 2];
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-			codeword3 = ~codeword3;
-
-			sign1 = codeword1 & (1 << 7) ? 0 : 1;
-			sign2 = codeword2 & (1 << 7) ? 0 : 1;
-			sign3 = codeword3 & (1 << 7) ? 0 : 1;
-
-			mag1 = compressed_magnitude(codeword1) - 33;
-			mag2 = compressed_magnitude(codeword2) - 33;
-			mag3 = compressed_magnitude(codeword3) - 33;
-
-			sample1 = (int16_t)(sign1 ? -mag1 : mag1);
-			sample2 = (int16_t)(sign2 ? -mag2 : mag2);
-			sample3 = (int16_t)(sign3 ? -mag3 : mag3);
-
-			wave_ptr->samples[i] = (sample1 << 2);
-			wave_ptr->samples[i + 1] = (sample2 << 2);
-			wave_ptr->samples[i + 2] = (sample3 << 2);
-			break;
-
-		case 2:
-			codeword1 = compressed_samples[i];
-			codeword2 = compressed_samples[i + 1];
-
-			codeword1 = ~codeword1;
-			codeword2 = ~codeword2;
-
-			sign1 = codeword1 & (1 << 7) ? 0 : 1;
-			sign2 = codeword2 & (1 << 7) ? 0 : 1;
-
-			mag1 = compressed_magnitude(codeword1) - 33;
-			mag2 = compressed_magnitude(codeword2) - 33;
-
-			sample1 = (int16_t)(sign1 ? -mag1 : mag1);
-			sample2 = (int16_t)(sign2 ? -mag2 : mag2);
-
-			wave_ptr->samples[i] = (sample1 << 2);
-			wave_ptr->samples[i + 1] = (sample2 << 2);
-			break;
-
-		case 1:
-			codeword1 = compressed_samples[i];
-
-			codeword1 = ~codeword1;
-
-			sign1 = codeword1 & (1 << 7) ? 0 : 1;
-
-			mag1 = compressed_magnitude(codeword1) - 33;
-
-			sample1 = (int16_t)(sign1 ? -mag1 : mag1);
-
-			wave_ptr->samples[i] = (sample1 << 2);
-			break;
+		wave_ptr->samples[i] = (sample1 << 2);
 	}
 }
 
